@@ -8,13 +8,14 @@
 */
 
 :- module(inherit,
-    [   inherit_rule_update/4,
-        inherit_value_update/5
+    [   inherit_rule_update/3,
+        passdown_rule_update/3,
+        value_update/5
     ]).
 
 :- meta_predicate
-    inherit_rule_update(2, +, +, -),
-    inherit_value_update_(2, +, +, +, +, -).
+    rule_update_(2, +, +, -),
+    value_update_(2, +, +, +, +, -).
 
 compare_inherit(iht_nk,iht_sk).
 compare_inherit(iht_sk,iht_k).
@@ -41,20 +42,28 @@ compare_inhNpad(Iht,Pad) :-
     compare_inherit(Iht,Iht_even), !.
 
 
-inherit_rule_update(Comp, Self_p_curr, Parent_p, Self_p_new) :- 
+inherit_rule_update(Self_iht_curr, Parent_iht, Self_iht_new) :- 
+    rule_update_(compare_inherit, Self_iht_curr, Parent_iht, Self_iht_new).
+
+passdown_rule_update(Self_pad_curr, Parent_pad, Self_pad_new) :- 
+    rule_update_(compare_passdown, Self_pad_curr, Parent_pad, Self_pad_new).
+
+rule_update_(Comp, Self_p_curr, Parent_p, Self_p_new) :- 
     (   call(Comp, Self_p_curr, Parent_p) 
         ->  Self_p_new = Parent_p
         ;   Self_p_new = Self_p_curr
     ). 
 
-inherit_value_update(Self_iht, Parent_pad, Self_v_curr, 
+value_update(Self_iht, Parent_pad, Self_v_curr, 
         Parent_v, Self_v_new) :- 
     inherit_value_update_(compare_inhNpad, Self_iht, Parent_pad, Self_v_curr, 
             Parent_v, Self_v_new).
 
-inherit_value_update_(Comp, Self_iht, Parent_pad, Self_v_curr, Parent_v, 
+value_update_(Comp, Self_iht, Parent_pad, Self_v_curr, Parent_v, 
         Self_v_new) :- 
     (   call(Comp, Self_iht, Parent_pad)
         ->  Self_v_new = Self_v_curr
         ;   Self_v_new = Parent_v
     ).
+
+% TODO: add value domain
