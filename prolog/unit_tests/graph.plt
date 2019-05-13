@@ -53,9 +53,9 @@ test(is_vertex_multi, [ setup(setup_database()),
 
 test(is_vertex_set, [   setup(setup_database()), 
                         cleanup(cleanup_database()),
-                        set(Vertices == [[v0,v1,v2]])
+                        set(V == [v0,v1,v2])
                     ]) :- 
-    setof(V,graph:is_vertex(graph,V),Vertices).
+    graph:is_vertex(graph,V).
 
 test(is_vertex_nonvertex, [ setup(setup_database()),
                             cleanup(cleanup_database()),
@@ -80,6 +80,15 @@ test(remove_vertex_nonvertex, [ setup(setup_database()),
                                 fail
                             ]) :- 
     graph:remove_vertex(graph, v3). 
+
+test(all_vertices_none, [true(Vs == [])]) :- 
+    graph:all_vertices(graph,Vs).
+
+test(all_vertices_valid, [  setup(setup_database()),
+                            cleanup(cleanup_database()),
+                            true(Vs == [v0, v1, v2])
+                        ]) :- 
+    graph:all_vertices(graph,Vs).
 
 test(validate_edge_valid, [ setup(setup_database()), 
                             cleanup(cleanup_database())
@@ -123,9 +132,9 @@ test(is_edge_multi, [   setup(setup_database()),
 
 test(is_edge_set, [ setup(setup_database()), 
                     cleanup(cleanup_database()),
-                    set(Edges == [[[v0,v1],[v0,v2]]])
+                    set(E == [[v0,v1],[v0,v2]])
                 ]) :- 
-    setof(E,graph:is_edge(graph,E),Edges).
+    graph:is_edge(graph,E).
 
 test(is_edge_nonedge, [ setup(setup_database()),
                         cleanup(cleanup_database()),
@@ -163,22 +172,67 @@ test(remove_edge_reverse, [ setup(setup_database()),
                         ]) :- 
     graph:remove_edge(graph,[v1,v0]). 
 
+test(all_edges_none, [true(Es == [])]) :- 
+    graph:all_edges(graph,Es).
+
+test(all_edges_valid, [  setup(setup_database()),
+                            cleanup(cleanup_database()),
+                            true(Es == [[v0,v1],[v0,v2]])
+                        ]) :- 
+    graph:all_edges(graph,Es).
+
 test(get_directed_edges_valid, [    setup(setup_database()), 
                                     cleanup(cleanup_database()),
-                                    set(Edges == [[[v0,v1],[v0,v2]]])
+                                    true(Edges == [[v0,v1],[v0,v2]])
                                 ]) :- 
-    get_directed_edges(graph,v0,Edges). 
+    graph:get_directed_edges(graph,v0,Edges). 
 
 test(get_directed_edges_empty, [    setup(setup_database()), 
                                     cleanup(cleanup_database()),
-                                    set(Edges == [])
+                                    true(Edges == [])
                                 ]) :- 
-    get_directed_edges(graph,v1,Edges).
+    graph:get_directed_edges(graph,v1,Edges).
 
 test(get_directed_edges_invalid, [  setup(setup_database()), 
                                     cleanup(cleanup_database()),
                                     fail 
                                 ]) :- 
-    get_directed_edges(graph,v3,_). 
+    graph:get_directed_edges(graph,v3,_). 
+
+test(graph_sources_none, [true(S == [])]) :- 
+    graph:graph_sources(graph,S).
+
+test(graph_sources_valid, [ setup(setup_database()), 
+                            cleanup(cleanup_database()),
+                            true(S == [v0])
+                        ]) :-
+    graph:graph_sources(graph,S).
+
+test(graph_nonsources_none, [true(NS == [])]) :- 
+    graph:graph_nonsources(graph,NS).
+
+test(graph_nonsources_valid, [  setup(setup_database()), 
+                                cleanup(cleanup_database()),
+                                true(NS == [v1,v2])
+                            ]) :-
+    graph:graph_nonsources(graph,NS).
+
+test(graph_terminals_none, [true(T == [])]) :- 
+    graph:graph_terminals(graph,T).
+
+test(graph_terminals_valid, [   setup(setup_database()), 
+                                cleanup(cleanup_database()),
+                                true(T == [v1,v2])
+                            ]) :-
+    graph:graph_terminals(graph,T).
+
+test(graph_nonterminals_none, [true(NT == [])]) :- 
+    graph:graph_nonterminals(graph,NT).
+
+test(graph_nonterminals_valid, [  setup(setup_database()), 
+                                cleanup(cleanup_database()),
+                                true(NT == [v0])
+                            ]) :-
+    graph:graph_nonterminals(graph,NT).
 
 :- end_tests(graph).
