@@ -23,7 +23,9 @@
         graph_sources/2,
         graph_nonsources/2,
         graph_terminals/2,
-        graph_nonterminals/2
+        graph_nonterminals/2,
+        acyclic/1,
+        cycle_from_vertex/2
     ]).
 
 % :- meta_predicate. 
@@ -123,3 +125,30 @@ graph_nonterminals(G,NTs) :-
     all_vertices(G,Vs),
     graph_nonsources(G,Ts),
     ord_subtract(Vs,Ts,NTs).
+
+% TODO: 
+acyclic(G) :- 
+    atomic(G),
+    graph_sources(G,Ss), !, 
+    (   Ss == [] 
+    ->  fail
+    ;   acyclic_(G,Ss)).
+
+acyclic_(_,[]) :- !.
+acyclic_(G,[S|St]) :- 
+    \+ cycle_from_vertex(G,S),
+    acyclic_(G,St).
+
+cycle_from_vertex(G,V) :- 
+    atomic(G), atomic(V),
+    cycle_from_vertex_(G,[],[V]).
+
+cycle_from_vertex_(_,A,[V|_]) :- 
+    member(V,A), !.
+
+cycle_from_vertex_(G,A,[V|T]) :- 
+    get_adjacent_vertices(G,V,Vs),
+    sort([V|A],Anew),
+    append(Vs,T,VS),
+    list_to_set(VS,VSnew),
+    cycle_from_vertex_(G,Anew,VSnew). 
