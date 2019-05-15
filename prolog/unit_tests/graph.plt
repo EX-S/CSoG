@@ -209,6 +209,24 @@ test(get_directed_edges_invalid, [  setup(setup_database_simple()),
                                 ]) :- 
     graph:get_directed_edges(graph,v3,_). 
 
+test(get_adjacent_vertices_valid, [ setup(setup_database_simple()), 
+                                    cleanup(cleanup_database()),
+                                    true(Vs == [v1,v2])
+                                ]) :- 
+    graph:get_adjacent_vertices(graph,v0,Vs). 
+
+test(get_adjacent_vertices_empty, [ setup(setup_database_simple()), 
+                                    cleanup(cleanup_database()),
+                                    true(Vs == [])
+                                ]) :- 
+    graph:get_adjacent_vertices(graph,v1,Vs).
+
+test(get_adjacent_vertices_invalid, [   setup(setup_database_simple()), 
+                                        cleanup(cleanup_database()),
+                                        fail 
+                                    ]) :- 
+    graph:get_adjacent_vertices(graph,v3,_). 
+
 test(graph_sources_none, [true(S == [])]) :- 
     graph:graph_sources(graph,S).
 
@@ -283,5 +301,28 @@ test(acyclic_cyclic, [  setup(setup_database_cyclic()),
                         fail
                     ]) :- 
     graph:acyclic(graph). 
+
+test(reachable_valid, [ setup(setup_database_simple()),
+                        cleanup(cleanup_database())
+                    ]) :-
+    graph:reachable(graph,v0,v2). 
+
+test(reachable_nonatomic, [ setup(setup_database_simple()),
+                            cleanup(cleanup_database()),
+                            fail
+                        ]) :- 
+    graph:reachable(G,v0,v2). 
+
+test(reachable_set, [   setup(setup_database_simple()),
+                        cleanup(cleanup_database()),
+                        set(T == [v0,v1,v2])
+                    ]) :-
+    graph:reachable(graph,v0,T).
+
+test(reachable_cyclic, [    setup(setup_database_cyclic()), 
+                            cleanup(cleanup_database()),
+                            set(T == [v0,v1,v2,v3])
+                        ]) :- 
+    graph:reachable(graph,v1,T).
 
 :- end_tests(graph).

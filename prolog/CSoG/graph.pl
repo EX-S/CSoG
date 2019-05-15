@@ -25,7 +25,8 @@
         graph_terminals/2,
         graph_nonterminals/2,
         acyclic/1,
-        cycle_from_vertex/2
+        cycle_from_vertex/2,
+        reachable/3
     ]).
 
 % :- meta_predicate. 
@@ -76,7 +77,7 @@ get_directed_edges(G,V,Es) :-
     sort(Ea,Es).
 
 get_adjacent_vertices(G,V,Ts) :- 
-    is_vertex(G,V),
+    is_vertex(G,V), !,
     findall(T,edge(G,[V,T]),Ta),
     sort(Ta,Ts).
 
@@ -126,7 +127,6 @@ graph_nonterminals(G,NTs) :-
     graph_nonsources(G,Ts),
     ord_subtract(Vs,Ts,NTs).
 
-% TODO: 
 acyclic(G) :- 
     atomic(G),
     graph_sources(G,Ss), !, 
@@ -141,14 +141,34 @@ acyclic_(G,[S|St]) :-
 
 cycle_from_vertex(G,V) :- 
     atomic(G), atomic(V),
-    cycle_from_vertex_(G,[],[V]).
+    cycle_from_vertex_(G,[V],[]).
 
-cycle_from_vertex_(_,A,[V|_]) :- 
+cycle_from_vertex_(_,[V|_],A) :- 
     member(V,A), !.
 
-cycle_from_vertex_(G,A,[V|T]) :- 
+cycle_from_vertex_(G,[V|T],A) :- 
     get_adjacent_vertices(G,V,Vs),
     sort([V|A],Anew),
     append(Vs,T,VS),
     list_to_set(VS,VSnew),
-    cycle_from_vertex_(G,Anew,VSnew). 
+    cycle_from_vertex_(G,VSnew,Anew). 
+
+reachable(G,S,T) :-
+    atomic(G),atomic(S),atomic(T),
+    is_vertex(G,S), !, 
+    is_vertex(G,T), !,
+    reachable_(G,[S],[],T), !.
+
+reachable(G,S,T) :- 
+    atomic(G),atomic(S),var(T),
+    is_vertex(G,S), !,
+    reachable_(G,[S],[],T).
+
+reachable_(_,_,[V|_],V).
+
+reachable_(G,[V|VT],A,T) :- 
+    get_adjacent_vertices(G,V,Vs),
+    append(Vs,VT,VS),
+    list_to_set(VS,VStmp),
+    subtract(VStmp,A,VSnew),
+    reachable_(G,VSnew,[V|A],T).
