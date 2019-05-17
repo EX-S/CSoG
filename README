@@ -1,0 +1,18 @@
+CSoG
+====
+
+A Dynamic CSP solver in prolog. 
+
+
+Dependencies
+------------
+
+The code has been tested on Swi-Prolog.
+
+Unit tests
+----------
+
+Unit tests cover most features. The tests are located in `prolog/unit_tests`.
+Each unit test file corresponds to a prolog source file in `prolog/CSoG`. You
+can run the tests by loading a unit test file into Swi-Prolog and calling
+`run_tests`. 
