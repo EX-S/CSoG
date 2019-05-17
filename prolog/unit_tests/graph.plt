@@ -24,6 +24,10 @@ setup_database_simple() :-
     assertz(graph:edge(graph,[v0,v2])),
     asserta(graph:edge(graph,[v0,v2])).
 
+% setup a cyclic graph database for testing
+% graph:
+%   vertices: v1, v0, v2, v3
+%   edges: v0 -> v1, v0 -> v2, v3 -> v0,  v1 -> v3
 setup_database_cyclic() :- 
     asserta(graph:vertex(graph,v0)), 
     asserta(graph:vertex(graph,v1)),
@@ -49,6 +53,19 @@ test(insert_vertex_nonatomic, [ setup(setup_database_simple()),
                                 fail
                             ]) :- 
     graph:insert_vertex(G,v3). 
+
+test(insert_vertices_valid, [   setup(setup_database_simple()),
+                                cleanup(cleanup_database())
+                            ]) :-
+    graph:insert_vertices(graph,[v3, v4]),
+    graph:vertex(graph,v3),
+    graph:vertex(graph,v4).
+
+test(insert_vertices_nonatomic, [   setup(setup_database_simple()),
+                                    cleanup(cleanup_database()),
+                                    fail
+                                ]) :-
+    graph:insert_vertices(graph,[v3, V]).
 
 test(is_vertex_fact, [   setup(setup_database_simple()), 
                         cleanup(cleanup_database())
@@ -79,17 +96,31 @@ test(remove_vertex_valid, [ setup(setup_database_simple()),
     graph:remove_vertex(graph, v0), 
     \+ graph:vertex(graph, v0). 
 
-test(remove_vertex_mulpi, [ setup(setup_database_simple()),
+test(remove_vertex_multi, [ setup(setup_database_simple()),
                             cleanup(cleanup_database())
                         ]) :- 
     graph:remove_vertex(graph,v1), 
     \+ graph:vertex(graph,v1). 
+
 
 test(remove_vertex_nonvertex, [ setup(setup_database_simple()),
                                 cleanup(cleanup_database()), 
                                 fail
                             ]) :- 
     graph:remove_vertex(graph, v3). 
+
+test(remove_vertices_valid, [   setup(setup_database_simple()),
+                                cleanup(cleanup_database())
+                            ]) :- 
+    graph:remove_vertices(graph,[v1,v2]),
+    \+ graph:vertex(graph,v1),
+    \+ graph:vertex(graph,v2).
+
+test(remove_vertices_nonvertex, [   setup(setup_database_simple()),
+                                    cleanup(cleanup_database()),
+                                    fail
+                                ]) :- 
+    graph:remove_vertices(graph,[v2,v3]).
 
 test(all_vertices_none, [true(Vs == [])]) :- 
     graph:all_vertices(graph,Vs).
@@ -99,6 +130,21 @@ test(all_vertices_valid, [  setup(setup_database_simple()),
                             true(Vs == [v0, v1, v2])
                         ]) :- 
     graph:all_vertices(graph,Vs).
+
+test(remove_all_vertices_valid, [   setup(setup_database_simple()),
+                                    cleanup(cleanup_database())
+                                ]) :-
+    graph:remove_all_vertices(graph), 
+    findall(V,graph:vertex(graph,V),[]).
+
+test(remove_all_vertices_nonatomic, [   setup(setup_database_simple()),
+                                        cleanup(cleanup_database()),
+                                        fail
+                                    ]) :-
+    graph:remove_all_vertices(G).
+
+test(remove_all_vertices_empty, []) :-
+    graph:remove_all_vertices(graph).
 
 test(validate_edge_valid, [ setup(setup_database_simple()), 
                             cleanup(cleanup_database())
@@ -128,6 +174,25 @@ test(insert_edge_nonatomic, [   setup(setup_database_simple()),
                                 fail
                             ]) :- 
     graph:insert_edge(G,[v1,v2]). 
+
+test(insert_edges_valid, [  setup(setup_database_simple()),
+                            cleanup(cleanup_database())
+                        ]) :-
+    graph:insert_edges(graph,[[v2,v1],[v1,v0]]),
+    graph:edge(graph,[v2,v1]),
+    graph:edge(graph,[v1,v0]).
+
+test(insert_edges_nonatomic, [  setup(setup_database_simple()),
+                                cleanup(cleanup_database()),
+                                fail
+                            ]) :-
+    graph:insert_edges(graph,[[v0,V]]).
+
+test(insert_edges_invalid_vertex, [ setup(setup_database_simple()),
+                                    cleanup(cleanup_database()),
+                                    fail
+                                ]) :-
+    graph:insert_edges(graph,[[v3,v2]]).
 
 test(is_edge_fact, [    setup(setup_database_simple()), 
                         cleanup(cleanup_database())
@@ -164,7 +229,7 @@ test(remove_edge_valid, [   setup(setup_database_simple()),
     graph:remove_edge(graph,[v0,v1]), 
     \+ graph:edge(graph,[v0,v1]). 
 
-test(remove_edge_mulpi, [   setup(setup_database_simple()),
+test(remove_edge_multi, [   setup(setup_database_simple()),
                             cleanup(cleanup_database())
                         ]) :- 
     graph:remove_edge(graph,[v0,v2]), 
@@ -182,6 +247,19 @@ test(remove_edge_reverse, [ setup(setup_database_simple()),
                         ]) :- 
     graph:remove_edge(graph,[v1,v0]). 
 
+test(remove_edges_valid, [  setup(setup_database_simple()),
+                            cleanup(cleanup_database())
+                        ]) :- 
+    graph:remove_edges(graph,[[v0,v2],[v0,v1]]),
+    \+ graph:edge(graph,[v0,v1]),
+    \+ graph:edge(graph,[v0,v2]).
+
+test(remove_edges_nonedge, [    setup(setup_database_simple()),
+                                cleanup(cleanup_database()),
+                                fail
+                            ]) :- 
+    graph:remove_edges(graph,[v2,v3]).
+
 test(all_edges_none, [true(Es == [])]) :- 
     graph:all_edges(graph,Es).
 
@@ -190,6 +268,21 @@ test(all_edges_valid, [  setup(setup_database_simple()),
                             true(Es == [[v0,v1],[v0,v2]])
                         ]) :- 
     graph:all_edges(graph,Es).
+
+test(remove_all_edges_valid, [  setup(setup_database_simple()),
+                                cleanup(cleanup_database())
+                            ]) :-
+    graph:remove_all_edges(graph), 
+    findall(E,graph:edge(graph,E),[]).
+
+test(remove_all_edges_nonatomic, [  setup(setup_database_simple()),
+                                    cleanup(cleanup_database()),
+                                    fail
+                                ]) :-
+    graph:remove_all_edges(G).
+
+test(remove_all_edges_empty, []) :-
+    graph:remove_all_edges(graph).
 
 test(get_directed_edges_valid, [    setup(setup_database_simple()), 
                                     cleanup(cleanup_database()),
@@ -208,6 +301,25 @@ test(get_directed_edges_invalid, [  setup(setup_database_simple()),
                                     fail 
                                 ]) :- 
     graph:get_directed_edges(graph,v3,_). 
+
+test(remove_directed_edges_valid, [ setup(setup_database_simple()),
+                                    cleanup(cleanup_database())
+                                ]) :-
+    graph:remove_directed_edges(graph,v0),
+    \+ graph:edge(graph,[v0,v1]),
+    \+ graph:edge(graph,[v0,v2]). 
+
+test(remove_directed_edges_empty, [ setup(setup_database_simple()),
+                                    cleanup(cleanup_database())
+                                ]) :- 
+    graph:remove_directed_edges(graph,v1),
+    graph:edge(graph,[v0,v1]).
+
+test(remove_directed_edges_invalid, [   setup(setup_database_simple()),
+                                        cleanup(cleanup_database()),
+                                        fail
+                                    ]) :-
+    graph:remove_directed_edges(graph,v3).
 
 test(get_adjacent_vertices_valid, [ setup(setup_database_simple()), 
                                     cleanup(cleanup_database()),

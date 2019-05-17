@@ -9,14 +9,21 @@
 
 :- module(graph,
     [   insert_vertex/2,
+        insert_vertices/2,
         is_vertex/2,
         remove_vertex/2,
+        remove_vertices/2,
         all_vertices/2,
+        remove_all_vertices/1,
         insert_edge/2,
+        insert_edges/2,
         is_edge/2,
         remove_edge/2,
+        remove_edges/2,
         all_edges/2,
+        remove_all_edges/1,
         get_directed_edges/3,
+        remove_directed_edges/2,
         get_adjacent_vertices/3,
         set_vertex_data/3,
         get_vertex_data/3,
@@ -39,6 +46,11 @@ insert_vertex(G,V) :-
     atomic(G), atomic(V),
     asserta(vertex(G,V)).
 
+insert_vertices(G,[]) :- atomic(G), !.
+insert_vertices(G,[V|Vt]) :-
+    insert_vertex(G,V),
+    insert_vertices(G,Vt).
+
 is_vertex(G,V) :- 
     vertex(G,V).
 
@@ -47,9 +59,18 @@ remove_vertex(G,V) :-
     is_vertex(G,V), !, 
     retractall(vertex(G,V)).
 
+remove_vertices(G,[]) :- atomic(G), !.
+remove_vertices(G,[V|Vt]) :- 
+    remove_vertex(G,V),
+    remove_vertices(G,Vt).
+
 all_vertices(G,Vs) :- 
     findall(V,is_vertex(G,V),Va),
     sort(Va,Vs).
+
+remove_all_vertices(G) :-
+    atomic(G),
+    retractall(vertex(G,_)).
 
 validate_edge(G,[S,T]) :- 
     atomic(G), atomic(S), atomic(T),
@@ -60,6 +81,11 @@ insert_edge(G,E) :-
     validate_edge(G,E), !,
     assertz(edge(G,E)).
 
+insert_edges(G,[]) :- atomic(G), !.
+insert_edges(G,[E|Et]) :- 
+    insert_edge(G,E),
+    insert_edges(G,Et).
+
 is_edge(G,E) :- 
     edge(G,E).
 
@@ -67,14 +93,27 @@ remove_edge(G,E) :-
     is_edge(G,E), !,
     retractall(edge(G,E)). 
 
+remove_edges(G,[]) :- atomic(G), !.
+remove_edges(G,[E|Et]) :- 
+    remove_edge(G,E),
+    remove_edges(G,Et).
+
 all_edges(G,Es) :- 
     findall(E,is_edge(G,E),Ea),
     sort(Ea,Es).
+
+remove_all_edges(G) :-
+    atomic(G),
+    retractall(edge(G,_)).
 
 get_directed_edges(G,V,Es) :- 
     is_vertex(G,V), !, 
     findall([V,T],edge(G,[V,T]),Ea),
     sort(Ea,Es).
+
+remove_directed_edges(G,V) :- 
+    get_directed_edges(G,V,Es),
+    remove_edges(G,Es).
 
 get_adjacent_vertices(G,V,Ts) :- 
     is_vertex(G,V), !,
@@ -172,3 +211,9 @@ reachable_(G,[V|VT],A,T) :-
     list_to_set(VS,VStmp),
     subtract(VStmp,A,VSnew),
     reachable_(G,VSnew,[V|A],T).
+
+is_null(G) :- 
+    atomic(G),
+    all_vertices(G, []),
+    all_edges(G,[]).
+
