@@ -33,7 +33,8 @@
         graph_nonterminals/2,
         acyclic/1,
         cycle_from_vertex/2,
-        reachable/3
+        reachable/3,
+        graph_is_null/1
     ]).
 
 % :- meta_predicate. 
@@ -212,7 +213,7 @@ reachable_(G,[V|VT],A,T) :-
     subtract(VStmp,A,VSnew),
     reachable_(G,VSnew,[V|A],T).
 
-is_null(G) :- 
+graph_is_null(G) :- 
     atomic(G),
     all_vertices(G, []),
     all_edges(G,[]).

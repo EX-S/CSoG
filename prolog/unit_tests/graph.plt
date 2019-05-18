@@ -437,4 +437,16 @@ test(reachable_cyclic, [    setup(setup_database_cyclic()),
                         ]) :- 
     graph:reachable(graph,v1,T).
 
+test(graph_is_null_empty, []) :- 
+    graph:graph_is_null(graph).
+
+test(graph_is_null_noatomic, [fail]) :-
+    graph:graph_is_null(G).
+
+test(graph_is_null_notnull, [   setup(setup_database_simple()),
+                                cleanup(cleanup_database()),
+                                fail
+                            ]) :-
+    graph:graph_is_null(graph).
+
 :- end_tests(graph).
