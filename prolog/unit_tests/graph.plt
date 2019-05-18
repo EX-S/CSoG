@@ -102,12 +102,28 @@ test(remove_vertex_multi, [ setup(setup_database_simple()),
     graph:remove_vertex(graph,v1), 
     \+ graph:vertex(graph,v1). 
 
-
 test(remove_vertex_nonvertex, [ setup(setup_database_simple()),
                                 cleanup(cleanup_database()), 
                                 fail
                             ]) :- 
     graph:remove_vertex(graph, v3). 
+
+test(remove_vertex_force_valid, [   setup(setup_database_simple()), 
+                                    cleanup(cleanup_database()) 
+                                ]) :- 
+    graph:remove_vertex_force(graph, v0), 
+    \+ graph:vertex(graph, v0). 
+
+test(remove_vertex_force_multi, [   setup(setup_database_simple()),
+                                    cleanup(cleanup_database())
+                                ]) :- 
+    graph:remove_vertex_force(graph,v1), 
+    \+ graph:vertex(graph,v1). 
+
+test(remove_vertex_force_nonvertex, [   setup(setup_database_simple()),
+                                        cleanup(cleanup_database()) 
+                                    ]) :- 
+    graph:remove_vertex_force(graph, v3). 
 
 test(remove_vertices_valid, [   setup(setup_database_simple()),
                                 cleanup(cleanup_database())
@@ -246,6 +262,24 @@ test(remove_edge_reverse, [ setup(setup_database_simple()),
                             fail
                         ]) :- 
     graph:remove_edge(graph,[v1,v0]). 
+
+test(remove_edge_force_valid, [ setup(setup_database_simple()), 
+                                cleanup(cleanup_database()) 
+                            ]) :- 
+    graph:remove_edge_force(graph,[v0,v1]), 
+    \+ graph:edge(graph,[v0,v1]). 
+
+test(remove_edge_force_multi, [   setup(setup_database_simple()),
+                                cleanup(cleanup_database())
+                            ]) :- 
+    graph:remove_edge_force(graph,[v0,v2]), 
+    \+ graph:edge(graph,[v0,v2]). 
+
+test(remove_edge_force_nonedge, [ setup(setup_database_simple()),
+                            cleanup(cleanup_database()) 
+                        ]) :- 
+    graph:remove_edge_force(graph,[v0,v3]). 
+
 
 test(remove_edges_valid, [  setup(setup_database_simple()),
                             cleanup(cleanup_database())
@@ -448,5 +482,41 @@ test(graph_is_null_notnull, [   setup(setup_database_simple()),
                                 fail
                             ]) :-
     graph:graph_is_null(graph).
+
+test(induced_subgraph_2_valid, [    setup(setup_database_simple()),
+                                    cleanup(cleanup_database())
+                                ]) :- 
+    graph:induced_subgraph(graph,[v0,v1]), 
+    setof(V,graph:vertex(graph,V),[v0,v1]),
+    setof(V,graph:edge(graph,E),[[v0,v1]]).
+
+test(induced_subgraph_2_nonatomic, [fail]) :- 
+    graph:induced_subgraph(G,[v0,v1]).
+
+test(induced_subgraph_2_invalid, [  setup(setup_database_simple()),
+                                    cleanup(cleanup_database()),
+                                    fail
+                                ]) :- 
+    graph:induced_subgraph(graph,[v0,v3]). 
+
+test(induced_subgraph_3_valid, [    setup(setup_database_simple()),
+                                    cleanup(cleanup_database())
+                                ]) :- 
+    graph:induced_subgraph(graph,[v0,v1],g1), 
+    setof(V,graph:vertex(g1,V),[v0,v1]),
+    setof(E,graph:edge(g1,E),[[v0,v1]]),
+    setof(V,graph:vertex(graph,V),[v0,v1,v2]),
+    setof(E,graph:edge(graph,E),[[v0,v1],[v0,v2]]).
+
+test(induced_subgraph_3_nonatomic, [fail]) :- 
+    graph:induced_subgraph(graph,[v0,v1],G).
+
+test(induced_subgraph_3_invalid, [  setup(setup_database_simple()),
+                                    cleanup(cleanup_database()),
+                                    fail
+                                ]) :- 
+    graph:induced_subgraph(graph,[v0,v3],g1). 
+
+
 
 :- end_tests(graph).

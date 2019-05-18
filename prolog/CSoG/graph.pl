@@ -12,6 +12,7 @@
         insert_vertices/2,
         is_vertex/2,
         remove_vertex/2,
+        remove_vertex_force/2,
         remove_vertices/2,
         all_vertices/2,
         remove_all_vertices/1,
@@ -19,6 +20,7 @@
         insert_edges/2,
         is_edge/2,
         remove_edge/2,
+        remove_edge_force/2,
         remove_edges/2,
         all_edges/2,
         remove_all_edges/1,
@@ -34,7 +36,9 @@
         acyclic/1,
         cycle_from_vertex/2,
         reachable/3,
-        graph_is_null/1
+        graph_is_null/1,
+        induced_subgraph/2,
+        induced_subgraph/3
     ]).
 
 % :- meta_predicate. 
@@ -58,6 +62,10 @@ is_vertex(G,V) :-
 % TODO: check if there are edges from/to V
 remove_vertex(G,V) :- 
     is_vertex(G,V), !, 
+    retractall(vertex(G,V)).
+
+remove_vertex_force(G,V) :- 
+    atomic(G),atomic(V),
     retractall(vertex(G,V)).
 
 remove_vertices(G,[]) :- atomic(G), !.
@@ -93,6 +101,10 @@ is_edge(G,E) :-
 remove_edge(G,E) :- 
     is_edge(G,E), !,
     retractall(edge(G,E)). 
+
+remove_edge_force(G,[U,V]) :- 
+    atomic(G),atomic(U),atomic(V),
+    retractall(edge(G,[U,V])).
 
 remove_edges(G,[]) :- atomic(G), !.
 remove_edges(G,[E|Et]) :- 
@@ -217,4 +229,33 @@ graph_is_null(G) :-
     atomic(G),
     all_vertices(G, []),
     all_edges(G,[]).
+
+induced_subgraph(G,Us) :-
+    atomic(G),
+    all_vertices(G,Vs), 
+    subset(Us,Vs),
+    subtract(Vs,Us,Ws),
+    induced_subgraph_rev(G,Vs,Ws).
+
+induced_subgraph_rev(_,_,[]) :- !.
+induced_subgraph_rev(G,Vs,[V|T]) :- 
+    induced_subgraph_rev_(G,V,Vs),
+    remove_vertex(G,V),
+    induced_subgraph_rev(G,Vs,T).
+
+induced_subgraph_rev_(_,_,[]) :- !.
+induced_subgraph_rev_(G,U,[V|T]) :-
+    remove_edge_force(G,[U,V]),
+    remove_edge_force(G,[V,U]),
+    induced_subgraph_rev_(G,U,T).
+
+induced_subgraph(G,Us,Gn) :- 
+    atomic(G),atomic(Gn),
+    graph_is_null(Gn),
+    all_vertices(G,Vs),
+    subset(Us,Vs),
+    insert_vertices(Gn,Us),
+    findall([U,V],(member(U,Us),member(V,Us),is_edge(G,[U,V])),Es),
+    sort(Es,Enew),
+    insert_edges(Gn,Enew).
 
