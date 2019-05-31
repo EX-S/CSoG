@@ -133,12 +133,12 @@ get_adjacent_vertices(G,V,Ts) :-
     findall(T,edge(G,[V,T]),Ta),
     sort(Ta,Ts).
 
-set_vertex_data(G,V,D) :- 
-    is_vertex(G,V), 
-    assertz(vertex_data(G,V,D)).
+set_vertex_data(G,V,T,D) :- 
+    is_vertex(G,V), !,
+    assertz(vertex_data(G,V,T,D)).
 
-get_vertex_data(G,V,D) :- 
-    vertex_data(G,V,D).
+get_vertex_data(G,V,T,D) :- 
+    vertex_data(G,V,T,D).
 
 
 graph_sources(G,Ss) :-
